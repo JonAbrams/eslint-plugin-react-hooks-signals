@@ -21,7 +21,7 @@ module.exports = {
   extends: [
     …,
     'plugin:react-hooks-signals/recommended',
-  ]
+  ],
   rules: {
     …,
     'react-hooks/exhaustive-deps': 'off',
