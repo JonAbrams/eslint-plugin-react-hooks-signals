@@ -47,6 +47,26 @@ const tests = {
     },
     {
       code: normalizeIndent`
+      const counterSignal = signal(0);
+      function MyComponent() {
+          useCallback(() => {
+            counterSignal.value += 1;
+          }, []);
+        }
+      `,
+    },
+    {
+      code: normalizeIndent`
+      function MyComponent() {
+          const counterSignal = useSignal(0);
+          useCallback(() => {
+            counterSignal.value += 1;
+          }, [counterSignal]);
+        }
+      `,
+    },
+    {
+      code: normalizeIndent`
         function MyComponent() {
           const local = {};
           useEffect(() => {
@@ -1559,6 +1579,36 @@ const tests = {
                   useEffect(() => {
                     console.log(counterSignal.value);
                   }, [counterSignal, counterSignal.value]);
+                }
+              `,
+            },
+          ],
+        },
+      ],
+    },
+    {
+      code: normalizeIndent`
+        function MyComponent() {
+          const counterSignal = useSignal(0);
+          useEffect(() => {
+            counterSignal.value += 1;
+          }, []);
+        }
+      `,
+      errors: [
+        {
+          message:
+            "React Hook useEffect has a missing dependency: 'counterSignal'. " +
+            "Either include it or remove the dependency array.",
+          suggestions: [
+            {
+              desc: "Update the dependencies array to be: [counterSignal]",
+              output: normalizeIndent`
+                function MyComponent() {
+                  const counterSignal = useSignal(0);
+                  useEffect(() => {
+                    counterSignal.value += 1;
+                  }, [counterSignal]);
                 }
               `,
             },
@@ -8236,54 +8286,31 @@ describe("react-hooks", () => {
     parserOptions,
   }).run("parser: babel-eslint", ReactHooksESLintRule, testsBabelEslint);
 
-  // new ESLintTester({
-  //   parser: require.resolve("@babel/eslint-parser"),
-  //   parserOptions,
-  // }).run(
-  //   "parser: @babel/eslint-parser",
-  //   ReactHooksESLintRule,
-  //   testsBabelEslint
-  // );
+  new ESLintTester({
+    parser: require.resolve("@babel/eslint-parser"),
+    parserOptions,
+  }).run(
+    "parser: @babel/eslint-parser",
+    ReactHooksESLintRule,
+    testsBabelEslint
+  );
 
-  // const testsTypescriptEslintParser = {
-  //   valid: [...testsTypescript.valid, ...tests.valid],
-  //   invalid: [...testsTypescript.invalid, ...tests.invalid],
-  // };
+  const testsTypescriptEslintParser = {
+    valid: [...testsTypescript.valid, ...tests.valid],
+    invalid: [...testsTypescript.invalid, ...tests.invalid],
+  };
 
-  // new ESLintTester({
-  //   parser: require.resolve("@typescript-eslint/parser-v3"),
-  //   parserOptions,
-  // }).run(
-  //   "parser: @typescript-eslint/parser@3.x",
-  //   ReactHooksESLintRule,
-  //   testsTypescriptEslintParser
-  // );
-
-  // new ESLintTester({
-  //   parser: require.resolve("@typescript-eslint/parser-v4"),
-  //   parserOptions,
-  // }).run("parser: @typescript-eslint/parser@4.x", ReactHooksESLintRule, {
-  //   valid: [
-  //     ...testsTypescriptEslintParserV4.valid,
-  //     ...testsTypescriptEslintParser.valid,
-  //   ],
-  //   invalid: [
-  //     ...testsTypescriptEslintParserV4.invalid,
-  //     ...testsTypescriptEslintParser.invalid,
-  //   ],
-  // });
-
-  // new ESLintTester({
-  //   parser: require.resolve("@typescript-eslint/parser-v5"),
-  //   parserOptions,
-  // }).run("parser: @typescript-eslint/parser@^5.0.0-0", ReactHooksESLintRule, {
-  //   valid: [
-  //     ...testsTypescriptEslintParserV4.valid,
-  //     ...testsTypescriptEslintParser.valid,
-  //   ],
-  //   invalid: [
-  //     ...testsTypescriptEslintParserV4.invalid,
-  //     ...testsTypescriptEslintParser.invalid,
-  //   ],
-  // });
+  new ESLintTester({
+    parser: require.resolve("@typescript-eslint/parser-v5"),
+    parserOptions,
+  }).run("parser: @typescript-eslint/parser@^5.0.0-0", ReactHooksESLintRule, {
+    valid: [
+      ...testsTypescriptEslintParserV4.valid,
+      ...testsTypescriptEslintParser.valid,
+    ],
+    invalid: [
+      ...testsTypescriptEslintParserV4.invalid,
+      ...testsTypescriptEslintParser.invalid,
+    ],
+  });
 });
